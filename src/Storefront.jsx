@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ShoppingBag, X, Plus, Minus, Menu, Search, Instagram, MessageCircle } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, Menu, Search, Instagram, MessageCircle, Truck, ShieldCheck, Award, Headphones, Leaf, User } from "lucide-react";
 
 /* ============================================================
    OASIS POMME CASSIS — boutique de tabac à chicha
@@ -239,6 +239,7 @@ function getPhoto(p) {
 function ProductCard({ p, onAdd }) {
   const soldOut = p.badge === "Épuisé";
   const photo = getPhoto(p);
+  const [qty, setQty] = useState(1);
   return (
     <div
       className="group relative flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1"
@@ -304,20 +305,44 @@ function ProductCard({ p, onAdd }) {
           >
             {p.price.toFixed(2)} € <span style={{ color: COLORS.muted, fontSize: "11px" }}>/25g</span>
           </span>
-          <button
-            disabled={soldOut}
-            onClick={() => onAdd(p)}
-            className="text-xs uppercase tracking-wide px-3 py-2 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            style={{
-              background: soldOut ? "transparent" : COLORS.plum,
-              color: soldOut ? COLORS.muted : COLORS.bg,
-              border: soldOut ? `1px solid ${COLORS.line}` : "none",
-              fontFamily: "'IBM Plex Mono', monospace",
-            }}
-          >
-            {soldOut ? "Épuisé" : "Ajouter"}
-          </button>
+          {!soldOut && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setQty((n) => Math.max(1, n - 1))}
+                className="w-6 h-6 flex items-center justify-center text-xs"
+                style={{ border: `1px solid ${COLORS.line}`, color: COLORS.plum }}
+              >
+                −
+              </button>
+              <span
+                style={{ color: COLORS.ink, fontFamily: "'IBM Plex Mono', monospace" }}
+                className="text-sm w-4 text-center"
+              >
+                {qty}
+              </span>
+              <button
+                onClick={() => setQty((n) => n + 1)}
+                className="w-6 h-6 flex items-center justify-center text-xs"
+                style={{ border: `1px solid ${COLORS.line}`, color: COLORS.plum }}
+              >
+                +
+              </button>
+            </div>
+          )}
         </div>
+        <button
+          disabled={soldOut}
+          onClick={() => { onAdd(p, qty); setQty(1); }}
+          className="mt-2 w-full text-xs uppercase tracking-wide px-3 py-2 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          style={{
+            background: soldOut ? "transparent" : COLORS.plum,
+            color: soldOut ? COLORS.muted : COLORS.bg,
+            border: soldOut ? `1px solid ${COLORS.line}` : "none",
+            fontFamily: "'IBM Plex Mono', monospace",
+          }}
+        >
+          {soldOut ? "Épuisé" : `Ajouter${qty > 1 ? ` (${qty})` : ""}`}
+        </button>
       </div>
     </div>
   );
@@ -337,13 +362,17 @@ export default function Storefront() {
   const [orderSent, setOrderSent] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const addToCart = (p) => {
+  const [toast, setToast] = useState(null);
+
+  const addToCart = (p, qty = 1) => {
     setCart((prev) => {
       const found = prev.find((i) => i.id === p.id);
-      if (found) return prev.map((i) => (i.id === p.id ? { ...i, qty: i.qty + 1 } : i));
-      return [...prev, { ...p, qty: 1 }];
+      if (found) return prev.map((i) => (i.id === p.id ? { ...i, qty: i.qty + qty } : i));
+      return [...prev, { ...p, qty }];
     });
-    setCartOpen(true);
+    setToast(`${p.name} ajouté au panier${qty > 1 ? ` (x${qty})` : ""}`);
+    clearTimeout(addToCart._t);
+    addToCart._t = setTimeout(() => setToast(null), 1800);
   };
 
   const changeQty = (id, delta) => {
@@ -423,11 +452,21 @@ export default function Storefront() {
           <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} style={{ color: COLORS.ink }}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <span
-            style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink }}
-            className="text-2xl tracking-tight"
-          >
-            Oasis <span style={{ color: COLORS.plum }}>Pomme</span> Cassis
+          <svg width="30" height="30" viewBox="0 0 40 40" style={{ color: COLORS.plum }}>
+            <ellipse cx="20" cy="33" rx="13" ry="5" fill="none" stroke="currentColor" strokeWidth="2" />
+            <line x1="20" y1="8" x2="20" y2="28" stroke="currentColor" strokeWidth="2" />
+            <ellipse cx="20" cy="8" rx="7" ry="2.6" fill="none" stroke="currentColor" strokeWidth="2" />
+            <path d="M14,2 C10,4 9,8 12,10 C 10,7 11,4 15,3 Z" fill="currentColor" />
+            <path d="M22,10 C 30,12 33,20 29,26" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <span style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink, lineHeight: 1 }} className="flex flex-col">
+            <span className="text-xl font-bold tracking-tight">Oasis</span>
+            <span
+              className="text-[10px] uppercase tracking-[0.2em]"
+              style={{ color: COLORS.plumSoft, fontFamily: "'IBM Plex Mono', monospace" }}
+            >
+              Pomme Cassis
+            </span>
           </span>
         </div>
 
@@ -450,6 +489,7 @@ export default function Storefront() {
 
         <div className="flex items-center gap-4">
           <Search size={19} style={{ color: COLORS.muted }} />
+          <User size={19} style={{ color: COLORS.muted }} className="hidden sm:block" />
           <button className="relative" onClick={() => setCartOpen(true)} style={{ color: COLORS.ink }}>
             <ShoppingBag size={21} />
             {count > 0 && (
@@ -480,23 +520,201 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* BANNER DÉCORATIF */}
-      <section className="relative overflow-hidden px-5 md:px-10 py-10" style={{ background: `radial-gradient(ellipse at top, ${COLORS.bgAlt}, ${COLORS.bg})` }}>
-        {[...Array(5)].map((_, i) => (
-          <div
-            key={i}
-            className="wisp absolute rounded-full blur-2xl"
-            style={{
-              width: 160 + i * 30,
-              height: 160 + i * 30,
-              background: i % 2 ? COLORS.plum : COLORS.wine,
-              opacity: 0.08,
-              left: `${10 + i * 18}%`,
-              top: `${5 + (i % 3) * 15}%`,
-              animationDelay: `${i * 1.4}s`,
-            }}
-          />
+      {/* HERO */}
+      <section
+        className="relative grid md:grid-cols-2 overflow-hidden"
+        style={{ background: `linear-gradient(100deg, #F6EEF7 0%, #F6EEF7 32%, ${COLORS.bgAlt} 58%, ${COLORS.bg} 100%)` }}
+      >
+        {/* palmes en filigrane sur la zone claire */}
+        <svg viewBox="0 0 380 420" className="absolute inset-0 w-full h-full pointer-events-none hidden md:block" preserveAspectRatio="xMidYMid slice">
+          <g opacity="0.12" fill="#5B1B57" transform="translate(-30,-20)">
+            <path d="M0,80 C20,20 60,-20 120,-30 C 90,20 80,70 105,115 Z" />
+            <path d="M0,90 C 35,50 85,30 135,35 C 95,65 80,95 100,140 Z" />
+          </g>
+          <g opacity="0.10" fill="#5B1B57" transform="translate(-10,300) scale(1,-1)">
+            <path d="M0,60 C15,15 45,-15 90,-22 C 68,15 60,52 79,86 Z" />
+          </g>
+        </svg>
+
+        <div className="relative flex flex-col justify-center px-6 md:px-12 py-12 md:py-16 order-2 md:order-1">
+          <span
+            className="text-xs uppercase tracking-[0.25em] mb-4"
+            style={{ color: COLORS.plum, fontFamily: "'IBM Plex Mono', monospace" }}
+          >
+            Sélection premium
+          </span>
+          <h1
+            className="text-4xl md:text-5xl leading-[1.05] mb-4 font-bold"
+            style={{ fontFamily: "'Fraunces', serif", color: "#2A1030" }}
+          >
+            Des goûts
+            <br />
+            d'exception
+          </h1>
+          <p className="text-sm md:text-base mb-8" style={{ color: "#6B5A6E" }}>
+            Une expérience unique à chaque session — saveurs intenses,
+            fumée généreuse, sélection Oasis Pomme Cassis.
+          </p>
+
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {[
+              { icon: Leaf, l1: "Arômes", l2: "intenses" },
+              { icon: Award, l1: "Qualité", l2: "premium" },
+              { icon: ShieldCheck, l1: "Fumée", l2: "épaisse" },
+            ].map(({ icon: Icon, l1, l2 }, i) => (
+              <div key={i} className="flex flex-col items-start gap-2">
+                <Icon size={22} style={{ color: COLORS.plum }} />
+                <span className="text-xs leading-snug uppercase tracking-wide" style={{ color: "#2A1030", fontFamily: "'IBM Plex Mono', monospace" }}>
+                  {l1}<br />{l2}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => window.scrollTo({ top: document.getElementById("catalogue")?.offsetTop || 0, behavior: "smooth" })}
+            className="self-start px-6 py-3 text-sm uppercase tracking-wide"
+            style={{ background: COLORS.plum, color: "#FFFFFF", fontFamily: "'IBM Plex Mono', monospace" }}
+          >
+            Voir le catalogue
+          </button>
+        </div>
+
+        <div className="relative order-1 md:order-2 min-h-[320px] md:min-h-[460px] overflow-hidden">
+          <svg viewBox="0 0 380 420" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="heroGold" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#E8C674" />
+                <stop offset="100%" stopColor="#B9832A" />
+              </linearGradient>
+              <radialGradient id="heroGlow" cx="55%" cy="20%" r="70%">
+                <stop offset="0%" stopColor={COLORS.plum} stopOpacity="0.28" />
+                <stop offset="100%" stopColor={COLORS.plum} stopOpacity="0" />
+              </radialGradient>
+              <linearGradient id="jarPurple" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#7A2264" />
+                <stop offset="100%" stopColor="#4A1442" />
+              </linearGradient>
+              <linearGradient id="jarWatermelon" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#B24B3C" />
+                <stop offset="100%" stopColor="#7A2E1E" />
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="380" height="420" fill="url(#heroGlow)" />
+
+            <g opacity="0.6" stroke="#EFE6D6" strokeWidth="2" strokeLinecap="round" fill="none">
+              <path d="M190,150 C 172,130 202,116 188,96 C 214,104 208,128 190,150" />
+              <path d="M190,150 C 208,136 180,122 198,106" />
+              <path d="M150,120 C 138,104 158,94 148,80" />
+            </g>
+
+            {/* chicha centrale */}
+            <g transform="translate(190,280)">
+              <line x1="-2" y1="-4" x2="-2" y2="46" stroke="#B9832A" strokeWidth="3" />
+              <ellipse cx="0" cy="50" rx="48" ry="19" fill="url(#jarPurple)" stroke={COLORS.plum} strokeWidth="2" />
+              <ellipse cx="0" cy="38" rx="42" ry="15" fill={COLORS.plum} opacity="0.16" />
+              <rect x="-5" y="-58" width="10" height="88" rx="4" fill="url(#heroGold)" />
+              <ellipse cx="0" cy="-58" rx="15" ry="5" fill="url(#heroGold)" />
+              <ellipse cx="0" cy="-4" rx="17" ry="5.5" fill="url(#heroGold)" />
+              <ellipse cx="0" cy="30" rx="19" ry="6" fill="url(#heroGold)" />
+              <path d="M -13 -68 C -22 -80 -20 -92 -8 -98 C -14 -88 -12 -78 -4 -70 Z" fill="#8A5D1E" />
+              <ellipse cx="-8" cy="-94" rx="9" ry="5" fill="#B9832A" />
+              <circle cx="-11" cy="-95" r="1.4" fill="#3A0F3D" />
+              <circle cx="-6" cy="-93" r="1.4" fill="#3A0F3D" />
+              <path d="M 16 -2 C 42 4 56 22 52 46 C 70 38 74 16 58 -2 C 46 -12 28 -10 16 -2 Z" fill="#4C9A2A" />
+              <ellipse cx="60" cy="50" rx="9" ry="6" fill="#3A0F3D" />
+            </g>
+
+            {/* pot "Pomme Cassis" */}
+            <g transform="translate(96,300)">
+              <rect x="-30" y="-6" width="60" height="66" rx="8" fill="#FDF6FA" stroke="#E3D5E6" />
+              <rect x="-30" y="-18" width="60" height="16" rx="6" fill="#241028" />
+              <ellipse cx="0" cy="6" rx="22" ry="9" fill="url(#jarPurple)" />
+              <text x="0" y="30" textAnchor="middle" fontFamily="Georgia, serif" fontSize="10" fontWeight="700" fill="#2A1030">POMME</text>
+              <text x="0" y="42" textAnchor="middle" fontFamily="Georgia, serif" fontSize="10" fontWeight="700" fill="#2A1030">CASSIS</text>
+              <text x="0" y="54" textAnchor="middle" fontFamily="'IBM Plex Mono', monospace" fontSize="6" letterSpacing="1" fill="#8C7A85">PREMIUM</text>
+            </g>
+
+            {/* pot "Pastèque Menthe" */}
+            <g transform="translate(288,308)">
+              <rect x="-26" y="-4" width="52" height="56" rx="7" fill="#FDF6FA" stroke="#E3D5E6" />
+              <rect x="-26" y="-15" width="52" height="14" rx="5" fill="#241028" />
+              <ellipse cx="0" cy="5" rx="19" ry="7.5" fill="url(#jarWatermelon)" />
+              <text x="0" y="26" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8.5" fontWeight="700" fill="#2A1030">PASTÈQUE</text>
+              <text x="0" y="37" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8.5" fontWeight="700" fill="#2A1030">MENTHE</text>
+            </g>
+
+            {/* pomme verte */}
+            <g transform="translate(60,344)">
+              <path d="M0,-4 C-16,-14 -20,6 -12,18 C-6,26 6,26 12,18 C20,6 16,-14 0,-4 Z" fill="#8CC63F" />
+              <path d="M0,-8 C2,-14 8,-16 10,-14" fill="none" stroke="#5C8A1E" strokeWidth="2" strokeLinecap="round" />
+            </g>
+
+            {/* grappe de raisin / cassis */}
+            <g transform="translate(120,352)" fill="#4A1442">
+              <circle cx="0" cy="0" r="6" />
+              <circle cx="9" cy="4" r="6" />
+              <circle cx="-9" cy="4" r="6" />
+              <circle cx="4" cy="12" r="6" />
+              <circle cx="-4" cy="12" r="6" />
+              <circle cx="0" cy="20" r="6" />
+            </g>
+
+            {/* glaçons */}
+            <g transform="translate(230,356)">
+              <rect x="0" y="0" width="16" height="16" rx="3" fill="#EAF3EE" opacity="0.9" transform="rotate(8)" />
+              <rect x="16" y="6" width="14" height="14" rx="3" fill="#F5FAF7" opacity="0.85" transform="rotate(-6 23 13)" />
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      {/* BANDEAU CONFIANCE */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-px" style={{ background: COLORS.plum }}>
+        {[
+          { icon: Truck, title: "Livraison rapide", sub: "48h / 72h" },
+          { icon: ShieldCheck, title: "Commande simple", sub: "Sur WhatsApp" },
+          { icon: Award, title: "Produits premium", sub: "Sélectionnés avec soin" },
+          { icon: Headphones, title: "Service client", sub: "À votre écoute" },
+        ].map(({ icon: Icon, title, sub }, i) => (
+          <div key={i} className="flex items-center gap-3 px-4 py-4" style={{ background: COLORS.plum }}>
+            <Icon size={22} style={{ color: COLORS.bg }} className="shrink-0" />
+            <div>
+              <p className="text-xs font-medium leading-tight" style={{ color: COLORS.bg }}>{title}</p>
+              <p className="text-[11px] leading-tight" style={{ color: COLORS.bg, opacity: 0.75 }}>{sub}</p>
+            </div>
+          </div>
         ))}
+      </section>
+
+      {/* BANDE SAVEURS */}
+      <section id="catalogue" className="px-5 md:px-10 py-8" style={{ background: COLORS.bgAlt }}>
+        <div className="flex gap-6 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+          {CATEGORIES.map((c) => {
+            const sample = PRODUCTS.find((p) => p.cat === c.id) || PRODUCTS[0];
+            const photo = getPhoto(sample);
+            return (
+              <button
+                key={c.id}
+                onClick={() => { setActiveCat(c.id); }}
+                className="flex flex-col items-center gap-2 shrink-0"
+              >
+                <div
+                  className="w-16 h-16 rounded-full overflow-hidden"
+                  style={{
+                    background: `linear-gradient(155deg, ${sample.g1}, ${sample.g2})`,
+                    border: activeCat === c.id ? `2px solid ${COLORS.plum}` : `2px solid transparent`,
+                  }}
+                >
+                  {photo && <img src={photo} alt={c.label} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
+                </div>
+                <span className="text-[11px] uppercase tracking-wide text-center" style={{ color: COLORS.ink, fontFamily: "'IBM Plex Mono', monospace" }}>
+                  {c.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       {/* PRODUCT GRID */}
@@ -581,6 +799,16 @@ export default function Storefront() {
         </span>
         <Instagram size={18} style={{ color: COLORS.muted }} />
       </footer>
+
+      {/* TOAST */}
+      {toast && (
+        <div
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-3 text-sm flex items-center gap-2"
+          style={{ background: COLORS.plum, color: "#FFFFFF", boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }}
+        >
+          ✓ {toast}
+        </div>
+      )}
 
       {/* CART DRAWER */}
       {cartOpen && (
