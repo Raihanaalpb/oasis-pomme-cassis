@@ -433,6 +433,69 @@ export default function Storefront() {
 
   const filtered = activeCat === "tous" ? PRODUCTS : PRODUCTS.filter((p) => p.cat === activeCat);
 
+  const [ageVerified, setAgeVerified] = useState(false);
+  const [underage, setUnderage] = useState(false);
+
+  if (underage) {
+    return (
+      <div className="flex items-center justify-center min-h-screen px-6 text-center" style={{ background: COLORS.bg }}>
+        <div>
+          <p style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink }} className="text-2xl mb-3">
+            Accès réservé aux personnes majeures
+          </p>
+          <p style={{ color: COLORS.muted }} className="text-sm">
+            Ce site propose des produits de tabac à chicha, dont la vente et la consultation sont réservées aux personnes de 18 ans et plus.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ageVerified) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-5" style={{ background: COLORS.bg }}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+          * { font-family: 'Inter', sans-serif; }
+        `}</style>
+        <div className="w-full max-w-sm text-center py-10 px-6" style={{ background: COLORS.bgAlt, border: `1px solid ${COLORS.line}` }}>
+          <svg width="40" height="40" viewBox="0 0 40 40" className="mx-auto mb-4" style={{ color: COLORS.plum }}>
+            <ellipse cx="20" cy="33" rx="13" ry="5" fill="none" stroke="currentColor" strokeWidth="2" />
+            <line x1="20" y1="8" x2="20" y2="28" stroke="currentColor" strokeWidth="2" />
+            <ellipse cx="20" cy="8" rx="7" ry="2.6" fill="none" stroke="currentColor" strokeWidth="2" />
+            <path d="M14,2 C10,4 9,8 12,10 C 10,7 11,4 15,3 Z" fill="currentColor" />
+            <path d="M22,10 C 30,12 33,20 29,26" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <p style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink }} className="text-xl mb-2">
+            Oasis Pomme Cassis
+          </p>
+          <p style={{ color: COLORS.muted }} className="text-sm mb-6">
+            Ce site présente des produits de tabac à chicha, réservés aux personnes majeures. Avez-vous 18 ans ou plus ?
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setAgeVerified(true)}
+              className="w-full py-3 text-sm uppercase tracking-wide"
+              style={{ background: COLORS.plum, color: "#FFFFFF", fontFamily: "'IBM Plex Mono', monospace" }}
+            >
+              Oui, j'ai 18 ans ou plus
+            </button>
+            <button
+              onClick={() => setUnderage(true)}
+              className="w-full py-3 text-sm uppercase tracking-wide"
+              style={{ background: "transparent", color: COLORS.muted, border: `1px solid ${COLORS.line}`, fontFamily: "'IBM Plex Mono', monospace" }}
+            >
+              Non
+            </button>
+          </div>
+          <p className="text-[11px] mt-6" style={{ color: COLORS.muted }}>
+            La vente de tabac est interdite aux mineurs.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ background: COLORS.bg, minHeight: "100vh" }}>
       <style>{`
@@ -529,18 +592,18 @@ export default function Storefront() {
         className="relative grid md:grid-cols-2 overflow-hidden"
         style={{ background: `linear-gradient(100deg, #F6EEF7 0%, #F6EEF7 32%, ${COLORS.bgAlt} 58%, ${COLORS.bg} 100%)` }}
       >
-        {/* palmes en filigrane sur la zone claire */}
-        <svg viewBox="0 0 380 420" className="absolute inset-0 w-full h-full pointer-events-none hidden md:block" preserveAspectRatio="xMidYMid slice">
-          <g opacity="0.12" fill="#5B1B57" transform="translate(-30,-20)">
-            <path d="M0,80 C20,20 60,-20 120,-30 C 90,20 80,70 105,115 Z" />
-            <path d="M0,90 C 35,50 85,30 135,35 C 95,65 80,95 100,140 Z" />
-          </g>
-          <g opacity="0.10" fill="#5B1B57" transform="translate(-10,300) scale(1,-1)">
-            <path d="M0,60 C15,15 45,-15 90,-22 C 68,15 60,52 79,86 Z" />
-          </g>
-        </svg>
-
         <div className="relative flex flex-col justify-center px-6 md:px-12 py-12 md:py-16 order-2 md:order-1">
+          {/* palmes en filigrane sur la zone de texte uniquement */}
+          <svg viewBox="0 0 380 420" className="absolute inset-0 w-full h-full pointer-events-none hidden md:block" preserveAspectRatio="xMidYMid slice">
+            <g opacity="0.12" fill="#5B1B57" transform="translate(-30,-20)">
+              <path d="M0,80 C20,20 60,-20 120,-30 C 90,20 80,70 105,115 Z" />
+              <path d="M0,90 C 35,50 85,30 135,35 C 95,65 80,95 100,140 Z" />
+            </g>
+            <g opacity="0.10" fill="#5B1B57" transform="translate(-10,300) scale(1,-1)">
+              <path d="M0,60 C15,15 45,-15 90,-22 C 68,15 60,52 79,86 Z" />
+            </g>
+          </svg>
+
           <span
             className="text-xs uppercase tracking-[0.25em] mb-4"
             style={{ color: COLORS.plum, fontFamily: "'IBM Plex Mono', monospace" }}
