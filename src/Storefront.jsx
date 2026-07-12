@@ -504,7 +504,7 @@ export default function Storefront() {
   }
 
   return (
-    <div style={{ background: `linear-gradient(180deg, #FFFFFF 0px, #E7D6EC 180px, #B98FC2 380px, ${COLORS.bgAlt} 560px, ${COLORS.bg} 820px)`, minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: COLORS.bg, minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
         * { font-family: 'Inter', sans-serif; }
@@ -649,6 +649,12 @@ export default function Storefront() {
           </div>
         )}
       </section>
+
+      {/* DÉGRADÉ DE RACCORD (blanc -> violet du site) */}
+      <div
+        className="w-full h-24 sm:h-32 md:h-40"
+        style={{ background: `linear-gradient(180deg, #FFFFFF 0%, #E7D6EC 30%, #B98FC2 60%, ${COLORS.bgAlt} 82%, ${COLORS.bg} 100%)` }}
+      />
 
       <div id="catalogue" />
 
