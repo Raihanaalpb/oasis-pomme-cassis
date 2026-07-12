@@ -14,6 +14,9 @@ const WHATSAPP_NUMBER = "33782216309";
 // ⚠️ Colle ici le lien public de ton image (ex. depuis Supabase Storage).
 // Laisse vide ("") pour garder l'illustration codée (chicha + fruits) par défaut.
 const BANNER_IMAGE_URL = "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/795ec212-4c1d-4d3a-82c1-7a271a2a803b.png";
+// ⚠️ Colle ici le lien de ta bannière format mobile (verticale ou plus carrée).
+// Laisse vide ("") pour utiliser la même bannière que sur ordinateur, recadrée.
+const BANNER_IMAGE_URL_MOBILE = "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/8B12A77D-4F6B-4DFE-A660-E12E0D9B2F1A.png";
 
 // ⚠️ Code test fourni publiquement par Mondial Relay ("BDTEST"). Un message
 // d'avertissement s'affichera dans le widget tant que ce code n'est pas
@@ -501,7 +504,7 @@ export default function Storefront() {
   }
 
   return (
-    <div style={{ background: COLORS.bg, minHeight: "100vh" }}>
+    <div style={{ background: `linear-gradient(180deg, #FFFFFF 0px, ${COLORS.bgAlt} 280px, ${COLORS.bg} 680px)`, minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
         * { font-family: 'Inter', sans-serif; }
@@ -617,14 +620,25 @@ export default function Storefront() {
       )}
 
       {/* BANNIÈRE */}
-      <section className="w-full overflow-hidden" style={{ background: COLORS.bgAlt }}>
+      <section className="w-full overflow-hidden" style={{ background: "transparent" }}>
         {BANNER_IMAGE_URL ? (
-          <img
-            src={BANNER_IMAGE_URL}
-            alt="Oasis Pomme Cassis"
-            className="w-full h-auto block"
-            onError={(e) => { e.currentTarget.style.display = "none"; }}
-          />
+          <>
+            {/* Mobile */}
+            <img
+              src={BANNER_IMAGE_URL_MOBILE || BANNER_IMAGE_URL}
+              alt="Oasis Pomme Cassis"
+              className="w-full h-56 sm:h-72 md:hidden object-cover block"
+              style={{ objectPosition: "center 30%" }}
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+            {/* Desktop */}
+            <img
+              src={BANNER_IMAGE_URL}
+              alt="Oasis Pomme Cassis"
+              className="w-full h-auto hidden md:block object-contain"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+          </>
         ) : (
           <div className="w-full flex items-center justify-center py-16" style={{ color: COLORS.muted }}>
             <p className="text-sm">Ajoute le lien de ta bannière dans BANNER_IMAGE_URL en haut du fichier.</p>
