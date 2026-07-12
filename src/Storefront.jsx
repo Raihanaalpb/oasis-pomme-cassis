@@ -1,3 +1,4 @@
+import { useState, useMemo, useEffect, useRef } from "react";
 import { ShoppingBag, X, Plus, Minus, Menu, Search, Instagram, MessageCircle, Truck, ShieldCheck, Award, Headphones, Leaf, User } from "lucide-react";
 
 /* ============================================================
