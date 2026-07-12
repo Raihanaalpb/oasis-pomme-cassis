@@ -504,7 +504,7 @@ export default function Storefront() {
   }
 
   return (
-    <div style={{ background: `linear-gradient(180deg, #FFFFFF 0px, ${COLORS.bgAlt} 280px, ${COLORS.bg} 680px)`, minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: `linear-gradient(180deg, #FFFFFF 0px, #E7D6EC 180px, #B98FC2 380px, ${COLORS.bgAlt} 560px, ${COLORS.bg} 820px)`, minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
         * { font-family: 'Inter', sans-serif; }
@@ -627,8 +627,12 @@ export default function Storefront() {
             <img
               src={BANNER_IMAGE_URL_MOBILE || BANNER_IMAGE_URL}
               alt="Oasis Pomme Cassis"
-              className="w-full h-56 sm:h-72 md:hidden object-cover block"
-              style={{ objectPosition: "center 30%" }}
+              className={
+                BANNER_IMAGE_URL_MOBILE
+                  ? "w-full h-auto md:hidden object-contain block"
+                  : "w-full h-56 sm:h-72 md:hidden object-cover block"
+              }
+              style={BANNER_IMAGE_URL_MOBILE ? {} : { objectPosition: "center 30%" }}
               onError={(e) => { e.currentTarget.style.display = "none"; }}
             />
             {/* Desktop */}
