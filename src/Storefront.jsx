@@ -605,7 +605,7 @@ export default function Storefront() {
 
       {/* MOBILE NAV */}
       {menuOpen && (
-        <div className="md:hidden flex flex-col px-5 py-4 gap-3" style={{ borderBottom: `1px solid ${COLORS.line}` }}>
+        <div className="md:hidden flex flex-col px-5 py-4 gap-3" style={{ background: COLORS.bg, borderBottom: `1px solid ${COLORS.line}` }}>
           {[{ id: "tous", label: "Tout" }, ...CATEGORIES].map((c) => (
             <button
               key={c.id}
@@ -650,16 +650,13 @@ export default function Storefront() {
         )}
       </section>
 
-      {/* DÉGRADÉ DE RACCORD (blanc -> violet du site) */}
-      <div
-        className="w-full h-24 sm:h-32 md:h-40"
-        style={{ background: `linear-gradient(180deg, #FFFFFF 0%, #E7D6EC 30%, #B98FC2 60%, ${COLORS.bgAlt} 82%, ${COLORS.bg} 100%)` }}
-      />
-
       <div id="catalogue" />
 
       {/* PRODUCT GRID */}
-      <section className="px-5 md:px-10 py-14">
+      <section
+        className="px-5 md:px-10 py-14"
+        style={{ background: `linear-gradient(180deg, #FFFFFF 0px, #E7D6EC 120px, #B98FC2 260px, #7A3E7E 420px, ${COLORS.bgAlt} 620px, ${COLORS.bg} 900px)` }}
+      >
         <div className="flex gap-2 overflow-x-auto pb-4 mb-6" style={{ scrollbarWidth: "none" }}>
           {[{ id: "tous", label: "Tout" }, ...CATEGORIES].map((c) => (
             <button
