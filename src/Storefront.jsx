@@ -1,4 +1,3 @@
-import { useState, useMemo, useEffect, useRef } from "react";
 import { ShoppingBag, X, Plus, Minus, Menu, Search, Instagram, MessageCircle, Truck, ShieldCheck, Award, Headphones, Leaf, User } from "lucide-react";
 
 /* ============================================================
@@ -249,13 +248,19 @@ function ProductCard({ p, onAdd }) {
   const [qty, setQty] = useState(1);
   return (
     <div
-      className="group relative flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1"
+      className="group relative flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1.5"
       style={{
         background: COLORS.surface,
-        border: `1px solid ${COLORS.line}`,
-        clipPath: "polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)",
+        border: "1px solid #B98FC255",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.18)",
       }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 14px 28px -8px #7A3E7E66, 0 0 0 1px #B98FC288"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.18)"; }}
     >
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: "linear-gradient(90deg, #7A3E7E, #B98FC2, transparent)" }}
+      />
       {p.badge && <Ribbon text={p.badge} tone={soldOut ? "wine" : "ember"} />}
       <div
         className="h-44 w-full relative overflow-hidden"
@@ -317,7 +322,7 @@ function ProductCard({ p, onAdd }) {
               <button
                 onClick={() => setQty((n) => Math.max(1, n - 1))}
                 className="w-6 h-6 flex items-center justify-center text-xs"
-                style={{ border: `1px solid ${COLORS.line}`, color: COLORS.plum }}
+                style={{ border: "1px solid #B98FC288", color: "#7A3E7E" }}
               >
                 −
               </button>
@@ -330,7 +335,7 @@ function ProductCard({ p, onAdd }) {
               <button
                 onClick={() => setQty((n) => n + 1)}
                 className="w-6 h-6 flex items-center justify-center text-xs"
-                style={{ border: `1px solid ${COLORS.line}`, color: COLORS.plum }}
+                style={{ border: "1px solid #B98FC288", color: "#7A3E7E" }}
               >
                 +
               </button>
@@ -655,7 +660,7 @@ export default function Storefront() {
       {/* PRODUCT GRID */}
       <section
         className="px-5 md:px-10 py-14"
-        style={{ background: `linear-gradient(180deg, #FFFFFF 0px, #E7D6EC 120px, #B98FC2 260px, #7A3E7E 420px, ${COLORS.bgAlt} 620px, ${COLORS.bg} 900px)` }}
+        style={{ background: `linear-gradient(180deg, #F6F6F5 0px, #E7D6EC 120px, #B98FC2 260px, #7A3E7E 420px, ${COLORS.bgAlt} 620px, ${COLORS.bg} 900px)` }}
       >
         <div className="flex gap-2 overflow-x-auto pb-4 mb-6" style={{ scrollbarWidth: "none" }}>
           {[{ id: "tous", label: "Tout" }, ...CATEGORIES].map((c) => (
