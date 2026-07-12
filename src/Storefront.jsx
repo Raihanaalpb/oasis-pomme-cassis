@@ -11,6 +11,10 @@ import { ShoppingBag, X, Plus, Minus, Menu, Search, Instagram, MessageCircle, Tr
 // Exemple : 06 12 34 56 78 en France -> "33612345678"
 const WHATSAPP_NUMBER = "33782216309";
 
+// ⚠️ Colle ici le lien public de ton image (ex. depuis Supabase Storage).
+// Laisse vide ("") pour garder l'illustration codée (chicha + fruits) par défaut.
+const BANNER_IMAGE_URL = "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/795ec212-4c1d-4d3a-82c1-7a271a2a803b.png";
+
 // ⚠️ Code test fourni publiquement par Mondial Relay ("BDTEST"). Un message
 // d'avertissement s'affichera dans le widget tant que ce code n'est pas
 // remplacé par ton vrai "code enseigne" (obtenu avec un compte pro Mondial Relay).
@@ -581,6 +585,14 @@ export default function Storefront() {
         </div>
 
         <div className="relative order-1 md:order-2 min-h-[320px] md:min-h-[460px] overflow-hidden">
+          {BANNER_IMAGE_URL ? (
+            <img
+              src={BANNER_IMAGE_URL}
+              alt="Oasis Pomme Cassis"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+          ) : (
           <svg viewBox="0 0 380 420" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice">
             <defs>
               <linearGradient id="heroGold" x1="0" y1="0" x2="0" y2="1">
@@ -666,6 +678,7 @@ export default function Storefront() {
               <rect x="16" y="6" width="14" height="14" rx="3" fill="#F5FAF7" opacity="0.85" transform="rotate(-6 23 13)" />
             </g>
           </svg>
+          )}
         </div>
       </section>
 
