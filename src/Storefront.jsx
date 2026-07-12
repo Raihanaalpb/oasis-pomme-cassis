@@ -357,6 +357,8 @@ export default function Storefront() {
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeCat, setActiveCat] = useState("tous");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [customerFirstName, setCustomerFirstName] = useState("");
   const [customerLastName, setCustomerLastName] = useState("");
   const [postCode, setPostCode] = useState("");
@@ -431,7 +433,9 @@ export default function Storefront() {
     setCartOpen(false);
   };
 
-  const filtered = activeCat === "tous" ? PRODUCTS : PRODUCTS.filter((p) => p.cat === activeCat);
+  const filtered = (activeCat === "tous" ? PRODUCTS : PRODUCTS.filter((p) => p.cat === activeCat)).filter((p) =>
+    searchQuery.trim() ? p.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) : true
+  );
 
   const [ageVerified, setAgeVerified] = useState(false);
   const [underage, setUnderage] = useState(false);
@@ -555,7 +559,9 @@ export default function Storefront() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Search size={19} style={{ color: COLORS.muted }} />
+          <button onClick={() => setSearchOpen((v) => !v)} style={{ color: searchOpen ? COLORS.plum : COLORS.muted }}>
+            <Search size={19} />
+          </button>
           <User size={19} style={{ color: COLORS.muted }} className="hidden sm:block" />
           <button className="relative" onClick={() => setCartOpen(true)} style={{ color: COLORS.ink }}>
             <ShoppingBag size={21} />
@@ -570,6 +576,29 @@ export default function Storefront() {
           </button>
         </div>
       </header>
+
+      {/* RECHERCHE */}
+      {searchOpen && (
+        <div className="px-5 md:px-10 py-3" style={{ background: COLORS.bgAlt, borderBottom: `1px solid ${COLORS.line}` }}>
+          <div className="flex items-center gap-2 max-w-md mx-auto md:mx-0 px-3 py-2" style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}` }}>
+            <Search size={16} style={{ color: COLORS.muted }} />
+            <input
+              autoFocus
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Chercher une saveur..."
+              className="flex-1 bg-transparent outline-none text-sm"
+              style={{ color: COLORS.ink }}
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} style={{ color: COLORS.muted }}>
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* MOBILE NAV */}
       {menuOpen && (
@@ -601,49 +630,6 @@ export default function Storefront() {
             <p className="text-sm">Ajoute le lien de ta bannière dans BANNER_IMAGE_URL en haut du fichier.</p>
           </div>
         )}
-      </section>
-
-      {/* BOUTON VOIR LE CATALOGUE + POINTS FORTS */}
-      <section className="px-5 md:px-10 py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6" style={{ background: COLORS.bg, borderBottom: `1px solid ${COLORS.line}` }}>
-        <div className="grid grid-cols-3 gap-6">
-          {[
-            { icon: Leaf, l1: "Arômes", l2: "intenses" },
-            { icon: Award, l1: "Qualité", l2: "premium" },
-            { icon: ShieldCheck, l1: "Fumée", l2: "épaisse" },
-          ].map(({ icon: Icon, l1, l2 }, i) => (
-            <div key={i} className="flex flex-col items-start gap-2">
-              <Icon size={20} style={{ color: COLORS.plum }} />
-              <span className="text-xs leading-snug uppercase tracking-wide" style={{ color: COLORS.ink, fontFamily: "'IBM Plex Mono', monospace" }}>
-                {l1}<br />{l2}
-              </span>
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={() => window.scrollTo({ top: document.getElementById("catalogue")?.offsetTop || 0, behavior: "smooth" })}
-          className="self-start md:self-auto px-6 py-3 text-sm uppercase tracking-wide shrink-0"
-          style={{ background: COLORS.plum, color: "#FFFFFF", fontFamily: "'IBM Plex Mono', monospace" }}
-        >
-          Voir le catalogue
-        </button>
-      </section>
-
-      {/* BANDEAU CONFIANCE */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-px" style={{ background: COLORS.plum }}>
-        {[
-          { icon: Truck, title: "Livraison rapide", sub: "48h / 72h" },
-          { icon: ShieldCheck, title: "Commande simple", sub: "Sur WhatsApp" },
-          { icon: Award, title: "Produits premium", sub: "Sélectionnés avec soin" },
-          { icon: Headphones, title: "Service client", sub: "À votre écoute" },
-        ].map(({ icon: Icon, title, sub }, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-4" style={{ background: COLORS.plum }}>
-            <Icon size={22} style={{ color: COLORS.bg }} className="shrink-0" />
-            <div>
-              <p className="text-xs font-medium leading-tight" style={{ color: COLORS.bg }}>{title}</p>
-              <p className="text-[11px] leading-tight" style={{ color: COLORS.bg, opacity: 0.75 }}>{sub}</p>
-            </div>
-          </div>
-        ))}
       </section>
 
       <div id="catalogue" />
