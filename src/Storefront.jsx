@@ -258,7 +258,6 @@ function getPhoto(p) {
 function ProductCard({ p, onAdd }) {
   const soldOut = p.badge === "Épuisé";
   const photo = p.photo || getPhoto(p);
-  const isRealPhoto = !!p.photo;
   const [qty, setQty] = useState(1);
   return (
     <div
@@ -272,18 +271,14 @@ function ProductCard({ p, onAdd }) {
     >
       {p.badge && <Ribbon text={p.badge} tone={soldOut ? "wine" : "ember"} />}
       <div
-        className={isRealPhoto ? "h-56 w-full relative overflow-hidden" : "h-44 w-full relative overflow-hidden"}
-        style={{ background: isRealPhoto ? "#F5F4F1" : `linear-gradient(155deg, ${p.g1}, ${p.g2})` }}
+        className="h-44 w-full relative overflow-hidden"
+        style={{ background: `linear-gradient(155deg, ${p.g1}, ${p.g2})` }}
       >
         {photo ? (
           <img
             src={photo}
             alt={p.name}
-            className={
-              isRealPhoto
-                ? "absolute inset-0 w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-105"
-                : "absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            }
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
             loading="lazy"
           />
