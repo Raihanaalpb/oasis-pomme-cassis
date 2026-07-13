@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ShoppingBag, X, Plus, Minus, Menu, Search, Instagram, MessageCircle, Truck, ShieldCheck, Award, Headphones, Leaf, User } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, Menu, Search, MessageCircle, Truck, ShieldCheck, Award, Headphones, Leaf, User, Ghost, Send } from "lucide-react";
 
 /* ============================================================
    OASIS POMME CASSIS — boutique de tabac à chicha
@@ -156,6 +156,15 @@ const CATEGORIES = [
   { id: "accessoires", label: "Accessoires" },
 ];
 
+// Navigation simplifiée en 4 groupes : Best-sellers, Goûts chicha (toutes les
+// marques de tabac réunies), Puff, et Accessoires (charbons inclus).
+const NAV_GROUPS = [
+  { id: "best", label: "Best-sellers", cats: null }, // cas spécial : BESTSELLER_IDS
+  { id: "chicha", label: "Goûts chicha", cats: ["af", "ad", "badmad", "dope", "jibiar"] },
+  { id: "puff", label: "Puff", cats: ["mazaya"] },
+  { id: "accessoires", label: "Accessoires", cats: ["accessoires", "charbons"] },
+];
+
 // price = prix pour un sachet de 25g
 // 47 produits — à VÉRIFIER : les prix sont des valeurs provisoires (9,90€ / 25g), à remplacer par tes vrais tarifs de vente
 const PRODUCTS = [
@@ -172,19 +181,19 @@ const PRODUCTS = [
   { id: 11, name: "Menthe Orange", brand: "Menthe & orange", cat: "af", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
   { id: 12, name: "Menthe Citron", brand: "Menthe & citron", cat: "af", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
   { id: 13, name: "Citron Passion Pamplemousse", brand: "Puff", cat: "mazaya", price: 9.9, badge: null, g1: "#C97B3D", g2: "#5C3719" },
-  { id: 14, name: "Cola", brand: "Adalya", cat: "ad", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
-  { id: 15, name: "Hawai", brand: "Mangue Ananas", cat: "ad", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
-  { id: 16, name: "Menthe Sucrée", brand: "Adalya", cat: "ad", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
-  { id: 17, name: "Watermelon Ice", brand: "Pastèque glacée", cat: "ad", price: 9.9, badge: null, g1: "#2F6B4A", g2: "#153524" },
-  { id: 18, name: "Hawaii", brand: "Ananas Mangue Menthe", cat: "ad", price: 9.9, badge: null, g1: "#3A5C8A", g2: "#16283D" },
-  { id: 19, name: "Love 66", brand: "Melon Passion Pastèque Menthe", cat: "ad", price: 9.9, badge: null, g1: "#B8A23A", g2: "#4E4419" },
-  { id: 20, name: "Mi Amor", brand: "Ananas Banane Menthe", cat: "ad", price: 9.9, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
-  { id: 21, name: "Ladykiller", brand: "Melon Mangue Baie", cat: "ad", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
-  { id: 22, name: "Swiss Bonbon", brand: "Menthe fraîche Bonbon", cat: "ad", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
-  { id: 23, name: "Chewing-gum Menthe", brand: "Gum Menthe", cat: "ad", price: 9.9, badge: null, g1: "#C97B3D", g2: "#5C3719" },
-  { id: 24, name: "Ice Lemon The Rock", brand: "Citron vert Menthe", cat: "ad", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
-  { id: 25, name: "Strawberry Banane Ice", brand: "Fraise Banane Ice", cat: "ad", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
-  { id: 26, name: "Moscow Evening", brand: "Pêche Pastèque Menthe", cat: "ad", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
+  { id: 14, name: "Cola", brand: "Adalya", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
+  { id: 15, name: "Hawai", brand: "Mangue Ananas", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
+  { id: 16, name: "Menthe Sucrée", brand: "Adalya", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
+  { id: 17, name: "Watermelon Ice", brand: "Pastèque glacée", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Watermelon%20Hookah%20Flavor%20-%20250g.jpg", price: 9.9, badge: null, g1: "#2F6B4A", g2: "#153524" },
+  { id: 18, name: "Hawaii", brand: "Ananas Mangue Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#3A5C8A", g2: "#16283D" },
+  { id: 19, name: "Love 66", brand: "Melon Passion Pastèque Menthe", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Love%2066%20Hookah%20Flavor%20250g%20-.jpg", price: 9.9, badge: null, g1: "#B8A23A", g2: "#4E4419" },
+  { id: 20, name: "Mi Amor", brand: "Ananas Banane Menthe", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Mi%20Amor%20Hookah%20Flavor%20-%20250g.jpg", price: 9.9, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
+  { id: 21, name: "Ladykiller", brand: "Melon Mangue Baie", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Lady%20Killer%20Hookah%20Flavor%20250g%20-.jpg", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
+  { id: 22, name: "Swiss Bonbon", brand: "Menthe fraîche Bonbon", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
+  { id: 23, name: "Chewing-gum Menthe", brand: "Gum Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#C97B3D", g2: "#5C3719" },
+  { id: 24, name: "Ice Lemon The Rock", brand: "Citron vert Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
+  { id: 25, name: "Strawberry Banane Ice", brand: "Fraise Banane Ice", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/strawberry%20banane%20ice.jpg", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
+  { id: 26, name: "Moscow Evening", brand: "Pêche Pastèque Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
   { id: 27, name: "Zéro to Zéro", brand: "Menthe sucrée Social", cat: "badmad", price: 9.9, badge: null, g1: "#2F6B4A", g2: "#153524" },
   { id: 28, name: "Maghrébin Nana", brand: "Menthe Marocaine", cat: "badmad", price: 9.9, badge: null, g1: "#3A5C8A", g2: "#16283D" },
   { id: 29, name: "Hardcore Nana", brand: "Menthe verte", cat: "badmad", price: 9.9, badge: null, g1: "#B8A23A", g2: "#4E4419" },
@@ -207,6 +216,9 @@ const PRODUCTS = [
   { id: 46, name: "Charbons naturels — 72 pièces", brand: "Combustion longue durée", cat: "charbons", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
   { id: 47, name: "Pince à charbon acier", brand: "Accessoire chicha", cat: "accessoires", price: 14.0, badge: null, g1: "#2F6B4A", g2: "#153524" },
 ];
+
+// Sélection "Best-sellers" (choisie manuellement)
+const BESTSELLER_IDS = [28, 18, 19, 27, 29, 9, 41, 40, 42, 44, 45, 1, 2];
 
 function Ribbon({ text, tone = "ember" }) {
   const bg = tone === "wine" ? COLORS.wine : COLORS.plum;
@@ -245,7 +257,7 @@ function getPhoto(p) {
 
 function ProductCard({ p, onAdd }) {
   const soldOut = p.badge === "Épuisé";
-  const photo = getPhoto(p);
+  const photo = p.photo || getPhoto(p);
   const [qty, setQty] = useState(1);
   return (
     <div
@@ -360,7 +372,8 @@ export default function Storefront() {
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeCat, setActiveCat] = useState("tous");
+  const [activeCat, setActiveCat] = useState("best");
+  const [activeSubCat, setActiveSubCat] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [customerFirstName, setCustomerFirstName] = useState("");
@@ -437,12 +450,22 @@ export default function Storefront() {
     setCartOpen(false);
   };
 
-  const filtered = (activeCat === "tous" ? PRODUCTS : PRODUCTS.filter((p) => p.cat === activeCat)).filter((p) =>
-    searchQuery.trim() ? p.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) : true
+  const activeGroup = NAV_GROUPS.find((g) => g.id === activeCat);
+  const filtered = (
+    activeCat === "best"
+      ? PRODUCTS.filter((p) => BESTSELLER_IDS.includes(p.id))
+      : activeSubCat
+      ? PRODUCTS.filter((p) => p.cat === activeSubCat)
+      : PRODUCTS.filter((p) => activeGroup?.cats?.includes(p.cat))
+  ).filter((p) =>
+    searchQuery.trim()
+      ? (p.name + " " + p.brand).toLowerCase().includes(searchQuery.trim().toLowerCase())
+      : true
   );
 
   const [ageVerified, setAgeVerified] = useState(false);
   const [underage, setUnderage] = useState(false);
+  const [legalOpen, setLegalOpen] = useState(false);
 
   if (underage) {
     return (
@@ -546,10 +569,10 @@ export default function Storefront() {
         </div>
 
         <nav className="hidden md:flex items-center gap-5 flex-wrap justify-center">
-          {[{ id: "tous", label: "Tout" }, ...CATEGORIES].map((c) => (
+          {NAV_GROUPS.map((c) => (
             <button
               key={c.id}
-              onClick={() => setActiveCat(c.id)}
+              onClick={() => { setActiveCat(c.id); setActiveSubCat(null); }}
               className="text-sm uppercase tracking-wide pb-1 transition-colors whitespace-nowrap shrink-0"
               style={{
                 color: activeCat === c.id ? COLORS.plumSoft : COLORS.muted,
@@ -607,10 +630,10 @@ export default function Storefront() {
       {/* MOBILE NAV */}
       {menuOpen && (
         <div className="md:hidden flex flex-col px-5 py-4 gap-3" style={{ background: COLORS.bg, borderBottom: `1px solid ${COLORS.line}` }}>
-          {[{ id: "tous", label: "Tout" }, ...CATEGORIES].map((c) => (
+          {NAV_GROUPS.map((c) => (
             <button
               key={c.id}
-              onClick={() => { setActiveCat(c.id); setMenuOpen(false); }}
+              onClick={() => { setActiveCat(c.id); setActiveSubCat(null); setMenuOpen(false); }}
               className="text-left text-sm uppercase tracking-wide"
               style={{ color: activeCat === c.id ? COLORS.plumSoft : COLORS.muted, fontFamily: "'IBM Plex Mono', monospace" }}
             >
@@ -659,10 +682,10 @@ export default function Storefront() {
         style={{ background: COLORS.bgAlt }}
       >
         <div className="flex gap-2 overflow-x-auto pb-4 mb-6" style={{ scrollbarWidth: "none" }}>
-          {[{ id: "tous", label: "Tout" }, ...CATEGORIES].map((c) => (
+          {NAV_GROUPS.map((c) => (
             <button
               key={c.id}
-              onClick={() => setActiveCat(c.id)}
+              onClick={() => { setActiveCat(c.id); setActiveSubCat(null); }}
               className="shrink-0 px-4 py-2 text-xs uppercase tracking-wide whitespace-nowrap transition-colors"
               style={{
                 background: activeCat === c.id ? COLORS.plum : COLORS.surface,
@@ -675,9 +698,41 @@ export default function Storefront() {
             </button>
           ))}
         </div>
+        {activeGroup?.cats && activeGroup.cats.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-3 mb-4" style={{ scrollbarWidth: "none" }}>
+            <button
+              onClick={() => setActiveSubCat(null)}
+              className="shrink-0 px-3 py-1.5 text-[11px] uppercase tracking-wide whitespace-nowrap transition-colors"
+              style={{
+                color: !activeSubCat ? COLORS.plum : COLORS.muted,
+                borderBottom: !activeSubCat ? `1px solid ${COLORS.plum}` : "1px solid transparent",
+                fontFamily: "'IBM Plex Mono', monospace",
+              }}
+            >
+              {activeCat === "accessoires" ? "Tous les produits" : "Toutes les marques"}
+            </button>
+            {activeGroup.cats.map((catId) => {
+              const cat = CATEGORIES.find((c) => c.id === catId);
+              return (
+                <button
+                  key={catId}
+                  onClick={() => setActiveSubCat(catId)}
+                  className="shrink-0 px-3 py-1.5 text-[11px] uppercase tracking-wide whitespace-nowrap transition-colors"
+                  style={{
+                    color: activeSubCat === catId ? COLORS.plum : COLORS.muted,
+                    borderBottom: activeSubCat === catId ? `1px solid ${COLORS.plum}` : "1px solid transparent",
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}
+                >
+                  {cat?.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className="flex items-baseline justify-between mb-8">
           <h2 style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink }} className="text-2xl">
-            {activeCat === "tous" ? "Toute la collection" : CATEGORIES.find((c) => c.id === activeCat)?.label}
+            {activeSubCat ? CATEGORIES.find((c) => c.id === activeSubCat)?.label : NAV_GROUPS.find((c) => c.id === activeCat)?.label}
           </h2>
           <span style={{ color: COLORS.muted, fontFamily: "'IBM Plex Mono', monospace" }} className="text-xs">
             {filtered.length} référence{filtered.length > 1 ? "s" : ""}
@@ -707,27 +762,33 @@ export default function Storefront() {
         </p>
       </section>
 
-      {/* NEWSLETTER */}
+      {/* RÉSEAUX SOCIAUX */}
       <section className="px-5 md:px-10 py-16 flex flex-col items-center text-center">
         <h3 style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink }} className="text-2xl mb-2">
-          Les nouveautés, avant tout le monde
+          Suis-nous
         </h3>
         <p className="text-sm mb-6" style={{ color: COLORS.muted }}>
-          Un e-mail de temps en temps, jamais plus.
+          Nouveautés, promos et coulisses sur nos réseaux.
         </p>
-        <div className="flex w-full max-w-sm">
-          <input
-            type="email"
-            placeholder="votre@email.com"
-            className="flex-1 px-4 py-3 text-sm outline-none"
-            style={{ background: COLORS.surface, color: COLORS.ink, border: `1px solid ${COLORS.line}` }}
-          />
-          <button
-            className="px-5 text-xs uppercase tracking-wide"
-            style={{ background: COLORS.plum, color: COLORS.bg, fontFamily: "'IBM Plex Mono', monospace" }}
+        <div className="flex gap-4">
+          <a
+            href="https://www.snapchat.com/add/oasispommecassis"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-5 py-3 text-xs uppercase tracking-wide"
+            style={{ border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: "'IBM Plex Mono', monospace" }}
           >
-            OK
-          </button>
+            <Ghost size={16} /> Snapchat
+          </a>
+          <a
+            href="https://t.me/oasispc"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-5 py-3 text-xs uppercase tracking-wide"
+            style={{ border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: "'IBM Plex Mono', monospace" }}
+          >
+            <Send size={16} /> Telegram
+          </a>
         </div>
       </section>
 
@@ -736,7 +797,21 @@ export default function Storefront() {
         <span style={{ color: COLORS.muted, fontFamily: "'IBM Plex Mono', monospace" }} className="text-xs">
           © 2026 Oasis Pomme Cassis
         </span>
-        <Instagram size={18} style={{ color: COLORS.muted }} />
+        <div className="flex items-center gap-5">
+          <button
+            onClick={() => setLegalOpen(true)}
+            className="text-xs underline"
+            style={{ color: COLORS.muted, fontFamily: "'IBM Plex Mono', monospace" }}
+          >
+            Mentions légales
+          </button>
+          <a href="https://www.snapchat.com/add/oasispommecassis" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.muted }}>
+            <Ghost size={18} />
+          </a>
+          <a href="https://t.me/oasispc" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.muted }}>
+            <Send size={18} />
+          </a>
+        </div>
       </footer>
 
       {/* TOAST */}
@@ -746,6 +821,119 @@ export default function Storefront() {
           style={{ background: COLORS.plum, color: "#FFFFFF", boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }}
         >
           ✓ {toast}
+        </div>
+      )}
+
+      {/* MENTIONS LÉGALES */}
+      {legalOpen && (
+        <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto" style={{ background: "rgba(0,0,0,0.6)" }} onClick={() => setLegalOpen(false)}>
+          <div
+            className="w-full max-w-2xl my-8 p-6 md:p-10"
+            style={{ background: COLORS.bg, border: `1px solid ${COLORS.line}` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink }} className="text-2xl">
+                Mentions légales
+              </h2>
+              <button onClick={() => setLegalOpen(false)} style={{ color: COLORS.muted }}>
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-5 text-sm leading-relaxed" style={{ color: COLORS.ink }}>
+              <p className="text-xs px-3 py-2" style={{ background: COLORS.surfaceHover, color: COLORS.muted }}>
+                ⚠️ Modèle à personnaliser : remplace les champs entre crochets par tes vraies informations
+                avant la mise en ligne définitive. Ceci n'est pas un avis juridique — fais relire ce texte
+                par un professionnel (avocat, expert-comptable, CCI...) si tu as un doute.
+              </p>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>1. Éditeur du site</h3>
+                <p>
+                  Le site Oasis Pomme Cassis est édité par [Nom / Prénom ou raison sociale], [statut :
+                  entrepreneur individuel / auto-entrepreneur / société], immatriculé sous le n° SIRET
+                  [XXX XXX XXX XXXXX], dont le siège est situé au [adresse complète].<br />
+                  Numéro de téléphone : {WHATSAPP_NUMBER}<br />
+                  E-mail de contact : [ton-email@exemple.com]
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>2. Hébergement</h3>
+                <p>
+                  Le site est hébergé par GitHub Pages — GitHub, Inc., 88 Colin P. Kelly Jr. Street,
+                  San Francisco, CA 94107, États-Unis.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>3. Vente de produits du tabac</h3>
+                <p>
+                  Les produits présentés sur ce site sont réservés aux personnes majeures (18 ans et plus),
+                  conformément à la législation française en vigueur sur la vente de produits du tabac.
+                  Une vérification d'âge est demandée à l'accès au site. Toute commande doit être passée
+                  par une personne majeure, pour son usage personnel.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>4. Commandes et paiement</h3>
+                <p>
+                  Les commandes sont passées via WhatsApp après sélection des produits sur le site.
+                  Le règlement s'effectue par [PayPal / Revolut / virement bancaire], selon les modalités
+                  communiquées après validation de la commande. Aucune donnée bancaire n'est collectée
+                  ou stockée par ce site.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>5. Livraison</h3>
+                <p>
+                  Les commandes sont expédiées en point relais (Mondial Relay). Les délais indicatifs
+                  sont de 48h à 72h après confirmation du paiement. [Précise ici tes zones de livraison
+                  et frais éventuels.]
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>6. Droit de rétractation</h3>
+                <p>
+                  [À compléter avec un professionnel : les conditions de rétractation/retour applicables
+                  aux produits du tabac peuvent différer du droit commun de la vente à distance —
+                  fais vérifier ce point avant mise en ligne.]
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>7. Données personnelles</h3>
+                <p>
+                  Les informations transmises via WhatsApp (nom, prénom, téléphone, point relais) sont
+                  utilisées uniquement pour le traitement de ta commande et ne sont ni revendues, ni
+                  partagées avec des tiers. Conformément au RGPD, tu disposes d'un droit d'accès, de
+                  rectification et de suppression de tes données, à exercer en nous contactant sur WhatsApp
+                  ou par e-mail.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>8. Propriété intellectuelle</h3>
+                <p>
+                  L'ensemble des contenus présents sur ce site (textes, visuels, logo) est la propriété
+                  de Oasis Pomme Cassis, sauf mention contraire. Toute reproduction sans autorisation
+                  est interdite.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-medium mb-1" style={{ color: COLORS.plum }}>9. Cookies</h3>
+                <p>
+                  Ce site n'utilise pas de cookies de suivi publicitaire. [À ajuster si tu ajoutes un
+                  outil d'analyse de trafic ou un service tiers plus tard.]
+                </p>
+              </section>
+            </div>
+          </div>
         </div>
       )}
 
@@ -776,8 +964,8 @@ export default function Storefront() {
                       className="w-14 h-14 shrink-0 overflow-hidden"
                       style={{ background: `linear-gradient(155deg, ${i.g1}, ${i.g2})` }}
                     >
-                      {getPhoto(i) && (
-                        <img src={getPhoto(i)} alt={i.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                      {(i.photo || getPhoto(i)) && (
+                        <img src={i.photo || getPhoto(i)} alt={i.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
