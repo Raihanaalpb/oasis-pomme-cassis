@@ -158,61 +158,91 @@ const CATEGORIES = [
 
 // Navigation simplifiée en 4 groupes : Best-sellers, Goûts chicha (toutes les
 // marques de tabac réunies), Puff, et Accessoires (charbons inclus).
+// Pour les Puffs, les produits partagent tous cat "mazaya" mais viennent de
+// marques différentes à l'origine — on garde cette info ici pour permettre
+// le sous-filtrage par marque, sans toucher au champ "cat" de chaque produit.
+const PUFF_ORIGIN = {
+  1: "puff_af", 2: "puff_af", 3: "puff_af", 4: "puff_af", 5: "puff_af", 6: "puff_af", 7: "puff_af", 8: "puff_af",
+  13: "puff_mazaya",
+  14: "puff_ad", 15: "puff_ad", 16: "puff_ad", 17: "puff_ad",
+};
+function getSub(p) {
+  return PUFF_ORIGIN[p.id] || p.cat;
+}
+const SUB_LABELS = {
+  af: "Al Fakher",
+  ad: "Adalya",
+  badmad: "Bad & Mad",
+  dope: "Dope",
+  jibiar: "Jibiar",
+  accessoires: "Accessoires",
+  charbons: "Charbons",
+  puff_af: "Al Fakher",
+  puff_mazaya: "Mazaya",
+  puff_ad: "Adalya",
+};
+
 const NAV_GROUPS = [
-  { id: "best", label: "Best-sellers", cats: null }, // cas spécial : BESTSELLER_IDS
-  { id: "chicha", label: "Goûts chicha", cats: ["af", "ad", "badmad", "dope", "jibiar"] },
-  { id: "puff", label: "Puff", cats: ["mazaya"] },
-  { id: "accessoires", label: "Accessoires", cats: ["accessoires", "charbons"] },
+  { id: "best", label: "Best-sellers", subs: null }, // cas spécial : BESTSELLER_IDS
+  { id: "chicha", label: "Goûts chicha", subs: ["af", "ad", "badmad", "dope", "jibiar"] },
+  { id: "puff", label: "Puff", subs: ["puff_af", "puff_mazaya", "puff_ad"] },
+  { id: "accessoires", label: "Accessoires", subs: ["accessoires", "charbons"] },
 ];
 
-// price = prix pour un sachet de 25g
-// 47 produits — à VÉRIFIER : les prix sont des valeurs provisoires (9,90€ / 25g), à remplacer par tes vrais tarifs de vente
+// price = prix de la boîte de 1kg pour les tabacs à chicha (af/ad/badmad/dope/jibiar),
+// prix à l'unité pour les Puffs (cat "mazaya") et les charbons/accessoires.
+function getUnitLabel(p) {
+  if (["af", "ad", "badmad", "dope", "jibiar"].includes(p.cat)) return "/1kg";
+  return "";
+}
+// 48 produits — prix des tabacs à chicha = boîte de 1kg, prix des Puffs = à l'unité (voir getUnitLabel)
 const PRODUCTS = [
-  { id: 1, name: "Peach Ice", brand: "Pêche glacée", cat: "af", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
-  { id: 2, name: "Watermelon Kiwi", brand: "Kiwi Pastèque", cat: "af", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
-  { id: 3, name: "Cherry Fiesta", brand: "Cerise", cat: "af", price: 9.9, badge: null, g1: "#C97B3D", g2: "#5C3719" },
-  { id: 4, name: "Mixed Berry", brand: "Mix fruits des bois", cat: "af", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
-  { id: 5, name: "Gum Mint", brand: "Chewing-gum & menthe", cat: "af", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
-  { id: 6, name: "Strawberry Punch", brand: "Fraise intense", cat: "af", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
-  { id: 7, name: "Cool Mango", brand: "Mangue fraîche", cat: "af", price: 9.9, badge: null, g1: "#2F6B4A", g2: "#153524" },
-  { id: 8, name: "Mint", brand: "Menthe", cat: "af", price: 9.9, badge: null, g1: "#3A5C8A", g2: "#16283D" },
-  { id: 9, name: "Menthe AF", brand: "Menthe", cat: "af", price: 9.9, badge: null, g1: "#B8A23A", g2: "#4E4419" },
-  { id: 10, name: "Menthe Crème", brand: "Menthe & crème", cat: "af", price: 9.9, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
-  { id: 11, name: "Menthe Orange", brand: "Menthe & orange", cat: "af", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
-  { id: 12, name: "Menthe Citron", brand: "Menthe & citron", cat: "af", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
-  { id: 13, name: "Citron Passion Pamplemousse", brand: "Puff", cat: "mazaya", price: 9.9, badge: null, g1: "#C97B3D", g2: "#5C3719" },
-  { id: 14, name: "Cola", brand: "Adalya", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
-  { id: 15, name: "Hawai", brand: "Mangue Ananas", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
-  { id: 16, name: "Menthe Sucrée", brand: "Adalya", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
-  { id: 17, name: "Watermelon Ice", brand: "Pastèque glacée", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Watermelon%20Hookah%20Flavor%20-%20250g.jpg", price: 9.9, badge: null, g1: "#2F6B4A", g2: "#153524" },
-  { id: 18, name: "Hawaii", brand: "Ananas Mangue Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#3A5C8A", g2: "#16283D" },
-  { id: 19, name: "Love 66", brand: "Melon Passion Pastèque Menthe", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Love%2066%20Hookah%20Flavor%20250g%20-.jpg", price: 9.9, badge: null, g1: "#B8A23A", g2: "#4E4419" },
-  { id: 20, name: "Mi Amor", brand: "Ananas Banane Menthe", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Mi%20Amor%20Hookah%20Flavor%20-%20250g.jpg", price: 9.9, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
-  { id: 21, name: "Ladykiller", brand: "Melon Mangue Baie", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Lady%20Killer%20Hookah%20Flavor%20250g%20-.jpg", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
-  { id: 22, name: "Swiss Bonbon", brand: "Menthe fraîche Bonbon", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
-  { id: 23, name: "Chewing-gum Menthe", brand: "Gum Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#C97B3D", g2: "#5C3719" },
-  { id: 24, name: "Ice Lemon The Rock", brand: "Citron vert Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
-  { id: 25, name: "Strawberry Banane Ice", brand: "Fraise Banane Ice", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/strawberry%20banane%20ice.jpg", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
-  { id: 26, name: "Moscow Evening", brand: "Pêche Pastèque Menthe", cat: "ad", photo: "", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
-  { id: 27, name: "Zéro to Zéro", brand: "Menthe sucrée Social", cat: "badmad", price: 9.9, badge: null, g1: "#2F6B4A", g2: "#153524" },
-  { id: 28, name: "Maghrébin Nana", brand: "Menthe Marocaine", cat: "badmad", price: 9.9, badge: null, g1: "#3A5C8A", g2: "#16283D" },
-  { id: 29, name: "Hardcore Nana", brand: "Menthe verte", cat: "badmad", price: 9.9, badge: null, g1: "#B8A23A", g2: "#4E4419" },
-  { id: 30, name: "Cold Peach", brand: "Pêche glacée", cat: "badmad", price: 9.9, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
-  { id: 31, name: "Habibi 66", brand: "Fruit Rouge Melon Glacé Miel", cat: "badmad", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
-  { id: 32, name: "Limeking", brand: "Elektra Citron vert Menthe", cat: "badmad", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
-  { id: 33, name: "Hayati", brand: "Gum Ananas Banane (Baku Night)", cat: "badmad", price: 9.9, badge: null, g1: "#C97B3D", g2: "#5C3719" },
-  { id: 34, name: "Flamingo", brand: "Mangue Passion Pamplemousse", cat: "badmad", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
-  { id: 35, name: "Mango Jango", brand: "Mangue Passion", cat: "badmad", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
-  { id: 36, name: "Cuban Mojito", brand: "Menthe Mojito", cat: "badmad", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
-  { id: 37, name: "Badqueen", brand: "14 Fruits exotiques Africa Queen", cat: "badmad", price: 9.9, badge: null, g1: "#2F6B4A", g2: "#153524" },
-  { id: 38, name: "Raspberry Ice", brand: "Framboise glacée", cat: "badmad", price: 9.9, badge: null, g1: "#3A5C8A", g2: "#16283D" },
-  { id: 39, name: "Suprême", brand: "Mangue Ananas Passion Menthe (Hawaï fruité)", cat: "badmad", price: 9.9, badge: null, g1: "#B8A23A", g2: "#4E4419" },
-  { id: 40, name: "Maldiwi", brand: "Façon Hawaï", cat: "dope", price: 9.9, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
-  { id: 41, name: "Redmint", brand: "Menthe rouge", cat: "dope", price: 9.9, badge: null, g1: "#B24B3C", g2: "#5C231C" },
-  { id: 42, name: "Menthe Verte", brand: "Dope", cat: "dope", price: 9.9, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
-  { id: 43, name: "Double Pomme", brand: "Pomme verte & rouge", cat: "dope", price: 9.9, badge: "Nouveau", g1: "#C97B3D", g2: "#5C3719" },
-  { id: 44, name: "Mint", brand: "Menthe rouge", cat: "jibiar", price: 9.9, badge: null, g1: "#7A2E3A", g2: "#33141A" },
-  { id: 45, name: "Absolute Zero", brand: "Menthe sucrée", cat: "jibiar", price: 9.9, badge: null, g1: "#4A3324", g2: "#20150E" },
+  { id: 1, name: "Peach Ice", brand: "Pêche glacée", cat: "mazaya", price: 20.0, badge: null, g1: "#B24B3C", g2: "#5C231C" },
+  { id: 2, name: "Watermelon Kiwi", brand: "Kiwi Pastèque", cat: "mazaya", price: 20.0, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
+  { id: 3, name: "Cherry Fiesta", brand: "Cerise", cat: "mazaya", price: 20.0, badge: null, g1: "#C97B3D", g2: "#5C3719" },
+  { id: 4, name: "Mixed Berry", brand: "Mix fruits des bois", cat: "mazaya", price: 20.0, badge: null, g1: "#7A2E3A", g2: "#33141A" },
+  { id: 5, name: "Gum Mint", brand: "Chewing-gum & menthe", cat: "mazaya", price: 20.0, badge: null, g1: "#4A3324", g2: "#20150E" },
+  { id: 6, name: "Strawberry Punch", brand: "Fraise intense", cat: "mazaya", price: 20.0, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
+  { id: 7, name: "Cool Mango", brand: "Mangue fraîche", cat: "mazaya", price: 20.0, badge: null, g1: "#2F6B4A", g2: "#153524" },
+  { id: 8, name: "Mint", brand: "Menthe", cat: "mazaya", price: 15.0, badge: null, g1: "#3A5C8A", g2: "#16283D" },
+  { id: 9, name: "Menthe AF", brand: "Menthe", cat: "af", price: 80.0, badge: null, g1: "#B8A23A", g2: "#4E4419" },
+  { id: 10, name: "Menthe Crème", brand: "Menthe & crème", cat: "af", price: 80.0, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
+  { id: 11, name: "Menthe Orange", brand: "Menthe & orange", cat: "af", price: 80.0, badge: null, g1: "#B24B3C", g2: "#5C231C" },
+  { id: 12, name: "Menthe Citron", brand: "Menthe & citron", cat: "af", price: 80.0, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
+  { id: 13, name: "Citron Passion Pamplemousse", brand: "Puff", cat: "mazaya", price: 20.0, badge: null, g1: "#C97B3D", g2: "#5C3719" },
+  { id: 14, name: "Cola", brand: "Adalya", cat: "mazaya", photo: "", price: 15.0, badge: null, g1: "#7A2E3A", g2: "#33141A" },
+  { id: 15, name: "Hawai", brand: "Mangue Ananas", cat: "mazaya", photo: "", price: 15.0, badge: null, g1: "#4A3324", g2: "#20150E" },
+  { id: 16, name: "Menthe Sucrée", brand: "Adalya", cat: "mazaya", photo: "", price: 15.0, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
+  { id: 17, name: "Watermelon Ice", brand: "Pastèque glacée", cat: "mazaya", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Watermelon%20Hookah%20Flavor%20-%20250g.jpg", price: 15.0, badge: null, g1: "#2F6B4A", g2: "#153524" },
+  { id: 18, name: "Hawaii", brand: "Ananas Mangue Menthe", cat: "ad", photo: "", price: 80.0, badge: null, g1: "#3A5C8A", g2: "#16283D" },
+  { id: 19, name: "Love 66", brand: "Melon Passion Pastèque Menthe", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Love%2066%20Hookah%20Flavor%20250g%20-.jpg", price: 80.0, badge: null, g1: "#B8A23A", g2: "#4E4419" },
+  { id: 20, name: "Mi Amor", brand: "Ananas Banane Menthe", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Mi%20Amor%20Hookah%20Flavor%20-%20250g.jpg", price: 80.0, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
+  { id: 21, name: "Ladykiller", brand: "Melon Mangue Baie", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/Adalya%20Lady%20Killer%20Hookah%20Flavor%20250g%20-.jpg", price: 80.0, badge: null, g1: "#B24B3C", g2: "#5C231C" },
+  { id: 22, name: "Swiss Bonbon", brand: "Menthe fraîche Bonbon", cat: "ad", photo: "", price: 80.0, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
+  { id: 23, name: "Chewing-gum Menthe", brand: "Gum Menthe", cat: "ad", photo: "", price: 80.0, badge: null, g1: "#C97B3D", g2: "#5C3719" },
+  { id: 24, name: "Ice Lemon The Rock", brand: "Citron vert Menthe", cat: "ad", photo: "", price: 80.0, badge: null, g1: "#7A2E3A", g2: "#33141A" },
+  { id: 25, name: "Strawberry Banane Ice", brand: "Fraise Banane Ice", cat: "ad", photo: "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/strawberry%20banane%20ice.jpg", price: 80.0, badge: null, g1: "#4A3324", g2: "#20150E" },
+  { id: 26, name: "Moscow Evening", brand: "Pêche Pastèque Menthe", cat: "ad", photo: "", price: 80.0, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
+  { id: 27, name: "Zéro to Zéro", brand: "Menthe sucrée Social", cat: "badmad", price: 60.0, badge: null, g1: "#2F6B4A", g2: "#153524" },
+  { id: 28, name: "Maghrébin Nana", brand: "Menthe Marocaine", cat: "badmad", price: 60.0, badge: null, g1: "#3A5C8A", g2: "#16283D" },
+  { id: 29, name: "Hardcore Nana", brand: "Menthe verte", cat: "badmad", price: 60.0, badge: null, g1: "#B8A23A", g2: "#4E4419" },
+  { id: 30, name: "Cold Peach", brand: "Pêche glacée", cat: "badmad", price: 60.0, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
+  { id: 31, name: "Habibi 66", brand: "Fruit Rouge Melon Glacé Miel", cat: "badmad", price: 60.0, badge: null, g1: "#B24B3C", g2: "#5C231C" },
+  { id: 32, name: "Limeking", brand: "Elektra Citron vert Menthe", cat: "badmad", price: 60.0, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
+  { id: 33, name: "Hayati", brand: "Gum Ananas Banane (Baku Night)", cat: "badmad", price: 60.0, badge: null, g1: "#C97B3D", g2: "#5C3719" },
+  { id: 34, name: "Flamingo", brand: "Mangue Passion Pamplemousse", cat: "badmad", price: 60.0, badge: null, g1: "#7A2E3A", g2: "#33141A" },
+  { id: 35, name: "Mango Jango", brand: "Mangue Passion", cat: "badmad", price: 60.0, badge: null, g1: "#4A3324", g2: "#20150E" },
+  { id: 36, name: "Cuban Mojito", brand: "Menthe Mojito", cat: "badmad", price: 60.0, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
+  { id: 37, name: "Badqueen", brand: "14 Fruits exotiques Africa Queen", cat: "badmad", price: 60.0, badge: null, g1: "#2F6B4A", g2: "#153524" },
+  { id: 38, name: "Raspberry Ice", brand: "Framboise glacée", cat: "badmad", price: 60.0, badge: null, g1: "#3A5C8A", g2: "#16283D" },
+  { id: 39, name: "Suprême", brand: "Mangue Ananas Passion Menthe (Hawaï fruité)", cat: "badmad", price: 60.0, badge: null, g1: "#B8A23A", g2: "#4E4419" },
+  { id: 48, name: "Menthe", brand: "Hawaï fruité", cat: "badmad", price: 60.0, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
+  { id: 40, name: "Maldiwi", brand: "Façon Hawaï", cat: "dope", price: 60.0, badge: null, g1: "#3E6B5C", g2: "#1F3A32" },
+  { id: 41, name: "Redmint", brand: "Menthe rouge", cat: "dope", price: 60.0, badge: null, g1: "#B24B3C", g2: "#5C231C" },
+  { id: 42, name: "Menthe Verte", brand: "Dope", cat: "dope", price: 60.0, badge: null, g1: "#5B2E5C", g2: "#2B1730" },
+  { id: 43, name: "Double Pomme", brand: "Pomme verte & rouge", cat: "dope", price: 60.0, badge: "Nouveau", g1: "#C97B3D", g2: "#5C3719" },
+  { id: 44, name: "Mint", brand: "Menthe rouge", cat: "jibiar", price: 70.0, badge: null, g1: "#7A2E3A", g2: "#33141A" },
+  { id: 45, name: "Absolute Zero", brand: "Menthe sucrée", cat: "jibiar", price: 70.0, badge: null, g1: "#4A3324", g2: "#20150E" },
   { id: 46, name: "Charbons naturels — 72 pièces", brand: "Combustion longue durée", cat: "charbons", price: 9.9, badge: null, g1: "#8A5A2A", g2: "#3A2610" },
   { id: 47, name: "Pince à charbon acier", brand: "Accessoire chicha", cat: "accessoires", price: 14.0, badge: null, g1: "#2F6B4A", g2: "#153524" },
 ];
@@ -258,6 +288,7 @@ function getPhoto(p) {
 function ProductCard({ p, onAdd }) {
   const soldOut = p.badge === "Épuisé";
   const photo = p.photo || getPhoto(p);
+  const isRealPhoto = !!p.photo;
   const [qty, setQty] = useState(1);
   return (
     <div
@@ -271,14 +302,18 @@ function ProductCard({ p, onAdd }) {
     >
       {p.badge && <Ribbon text={p.badge} tone={soldOut ? "wine" : "ember"} />}
       <div
-        className="h-44 w-full relative overflow-hidden"
-        style={{ background: `linear-gradient(155deg, ${p.g1}, ${p.g2})` }}
+        className={isRealPhoto ? "h-56 w-full relative overflow-hidden" : "h-44 w-full relative overflow-hidden"}
+        style={{ background: isRealPhoto ? "#F5F4F1" : `linear-gradient(155deg, ${p.g1}, ${p.g2})` }}
       >
         {photo ? (
           <img
             src={photo}
             alt={p.name}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className={
+              isRealPhoto
+                ? "absolute inset-0 w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-105"
+                : "absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            }
             onError={(e) => { e.currentTarget.style.display = "none"; }}
             loading="lazy"
           />
@@ -323,7 +358,7 @@ function ProductCard({ p, onAdd }) {
             style={{ color: COLORS.plumSoft, fontFamily: "'IBM Plex Mono', monospace" }}
             className="text-base"
           >
-            {p.price.toFixed(2)} € <span style={{ color: COLORS.muted, fontSize: "11px" }}>/25g</span>
+            {p.price.toFixed(2)} € <span style={{ color: COLORS.muted, fontSize: "11px" }}>{getUnitLabel(p)}</span>
           </span>
           {!soldOut && (
             <div className="flex items-center gap-1.5">
@@ -417,7 +452,7 @@ export default function Storefront() {
     }
     setFormError("");
     const lines = cart.map(
-      (i) => `• ${i.qty} × ${i.name} (25g) — ${(i.price * i.qty).toFixed(2)} €`
+      (i) => `• ${i.qty} × ${i.name}${getUnitLabel(i) ? " (" + getUnitLabel(i).replace("/", "") + ")" : ""} — ${(i.price * i.qty).toFixed(2)} €`
     );
     const message = [
       "Bonjour, je souhaite passer une commande sur Oasis Pomme Cassis :",
@@ -455,8 +490,8 @@ export default function Storefront() {
     activeCat === "best"
       ? PRODUCTS.filter((p) => BESTSELLER_IDS.includes(p.id))
       : activeSubCat
-      ? PRODUCTS.filter((p) => p.cat === activeSubCat)
-      : PRODUCTS.filter((p) => activeGroup?.cats?.includes(p.cat))
+      ? PRODUCTS.filter((p) => getSub(p) === activeSubCat)
+      : PRODUCTS.filter((p) => activeGroup?.subs?.includes(getSub(p)))
   ).filter((p) =>
     searchQuery.trim()
       ? (p.name + " " + p.brand).toLowerCase().includes(searchQuery.trim().toLowerCase())
@@ -698,7 +733,7 @@ export default function Storefront() {
             </button>
           ))}
         </div>
-        {activeGroup?.cats && activeGroup.cats.length > 1 && (
+        {activeGroup?.subs && activeGroup.subs.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-3 mb-4" style={{ scrollbarWidth: "none" }}>
             <button
               onClick={() => setActiveSubCat(null)}
@@ -711,28 +746,25 @@ export default function Storefront() {
             >
               {activeCat === "accessoires" ? "Tous les produits" : "Toutes les marques"}
             </button>
-            {activeGroup.cats.map((catId) => {
-              const cat = CATEGORIES.find((c) => c.id === catId);
-              return (
-                <button
-                  key={catId}
-                  onClick={() => setActiveSubCat(catId)}
-                  className="shrink-0 px-3 py-1.5 text-[11px] uppercase tracking-wide whitespace-nowrap transition-colors"
-                  style={{
-                    color: activeSubCat === catId ? COLORS.plum : COLORS.muted,
-                    borderBottom: activeSubCat === catId ? `1px solid ${COLORS.plum}` : "1px solid transparent",
-                    fontFamily: "'IBM Plex Mono', monospace",
-                  }}
-                >
-                  {cat?.label}
-                </button>
-              );
-            })}
+            {activeGroup.subs.map((subId) => (
+              <button
+                key={subId}
+                onClick={() => setActiveSubCat(subId)}
+                className="shrink-0 px-3 py-1.5 text-[11px] uppercase tracking-wide whitespace-nowrap transition-colors"
+                style={{
+                  color: activeSubCat === subId ? COLORS.plum : COLORS.muted,
+                  borderBottom: activeSubCat === subId ? `1px solid ${COLORS.plum}` : "1px solid transparent",
+                  fontFamily: "'IBM Plex Mono', monospace",
+                }}
+              >
+                {SUB_LABELS[subId]}
+              </button>
+            ))}
           </div>
         )}
         <div className="flex items-baseline justify-between mb-8">
           <h2 style={{ fontFamily: "'Fraunces', serif", color: COLORS.ink }} className="text-2xl">
-            {activeSubCat ? CATEGORIES.find((c) => c.id === activeSubCat)?.label : NAV_GROUPS.find((c) => c.id === activeCat)?.label}
+            {activeSubCat ? SUB_LABELS[activeSubCat] : NAV_GROUPS.find((c) => c.id === activeCat)?.label}
           </h2>
           <span style={{ color: COLORS.muted, fontFamily: "'IBM Plex Mono', monospace" }} className="text-xs">
             {filtered.length} référence{filtered.length > 1 ? "s" : ""}
@@ -971,7 +1003,7 @@ export default function Storefront() {
                     <div className="flex-1 min-w-0">
                       <p style={{ color: COLORS.ink }} className="text-sm truncate">{i.name}</p>
                       <p style={{ color: COLORS.plumSoft, fontFamily: "'IBM Plex Mono', monospace" }} className="text-xs">
-                        {i.price.toFixed(2)} € /25g
+                        {i.price.toFixed(2)} € {getUnitLabel(i)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1084,30 +1116,7 @@ export default function Storefront() {
             {orderSent && (
               <div className="pt-4 mt-4 flex flex-col gap-4" style={{ borderTop: `1px solid ${COLORS.line}` }}>
                 <p style={{ color: COLORS.ink }} className="text-sm">
-                  Merci ! Votre commande a été envoyée sur WhatsApp. Une fois la confirmation reçue, voici les moyens de paiement disponibles :
-                </p>
-                <div className="flex flex-col gap-2 text-sm" style={{ color: COLORS.ink }}>
-                  <div className="flex justify-between px-3 py-2" style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}` }}>
-                    <span>PayPal</span>
-                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: COLORS.plumSoft }}>@kevin</span>
-                  </div>
-                  <div className="flex justify-between px-3 py-2" style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}` }}>
-                    <span>Revolut</span>
-                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: COLORS.plumSoft }}>@kevinrev</span>
-                  </div>
-                  <div className="px-3 py-2" style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}` }}>
-                    <div className="flex justify-between mb-1">
-                      <span>Virement — RIB</span>
-                    </div>
-                    <p style={{ fontFamily: "'IBM Plex Mono', monospace", color: COLORS.plumSoft, fontSize: "12px" }}>
-                      IBAN : FR76 XXXX XXXX XXXX XXXX XXXX XXX<br />
-                      BIC : XXXXXXXX<br />
-                      Titulaire : Kevin XXXXXX
-                    </p>
-                  </div>
-                </div>
-                <p className="text-[11px]" style={{ color: COLORS.muted }}>
-                  ⚠️ RIB d'exemple à remplacer par tes vraies coordonnées bancaires.
+                  Merci ! Votre commande a été envoyée sur WhatsApp. Vous allez recevoir un message avec les moyens de paiement et la suite des étapes.
                 </p>
                 <button
                   onClick={resetOrder}
