@@ -11,6 +11,13 @@ import { ShoppingBag, X, Plus, Minus, Menu, Search, MessageCircle, Truck, Shield
 // Exemple : 06 12 34 56 78 en France -> "33612345678"
 const WHATSAPP_NUMBER = "33782216309";
 
+// Nom d'utilisateur PayPal.me — génère un lien de paiement avec le montant pré-rempli
+const PAYPAL_ME_USERNAME = "raihanaaik";
+
+// Identifiant Revolut (Revtag) — le lien revolut.me ne permet pas de pré-remplir
+// le montant, le client devra le saisir lui-même une fois sur la page.
+const REVOLUT_TAG = "raihanav111";
+
 // ⚠️ Colle ici le lien public de ton image (ex. depuis Supabase Storage).
 // Laisse vide ("") pour garder l'illustration codée (chicha + fruits) par défaut.
 const BANNER_IMAGE_URL = "https://qhkpehujmkeraupworzb.supabase.co/storage/v1/object/public/chicha/795ec212-4c1d-4d3a-82c1-7a271a2a803b.png";
@@ -1116,7 +1123,31 @@ export default function Storefront() {
             {orderSent && (
               <div className="pt-4 mt-4 flex flex-col gap-4" style={{ borderTop: `1px solid ${COLORS.line}` }}>
                 <p style={{ color: COLORS.ink }} className="text-sm">
-                  Merci ! Votre commande a été envoyée sur WhatsApp. Vous allez recevoir un message avec les moyens de paiement et la suite des étapes.
+                  Merci ! Votre commande a été envoyée sur WhatsApp.
+                </p>
+                <a
+                  href={`https://paypal.me/${PAYPAL_ME_USERNAME}/${total.toFixed(2)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 text-sm uppercase tracking-wide flex items-center justify-center gap-2"
+                  style={{ background: "#003087", color: "#FFFFFF", fontFamily: "'IBM Plex Mono', monospace" }}
+                >
+                  Payer {total.toFixed(2)} € avec PayPal
+                </a>
+                <p className="text-[11px] text-center" style={{ color: COLORS.muted }}>
+                  Le montant est déjà rempli — il ne vous reste qu'à confirmer sur PayPal.
+                </p>
+                <a
+                  href={`https://revolut.me/${REVOLUT_TAG}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 text-sm uppercase tracking-wide flex items-center justify-center gap-2"
+                  style={{ background: "#191C1F", color: "#FFFFFF", fontFamily: "'IBM Plex Mono', monospace" }}
+                >
+                  Payer avec Revolut
+                </a>
+                <p className="text-[11px] text-center" style={{ color: COLORS.muted }}>
+                  Sur Revolut, indiquez le montant exact : {total.toFixed(2)} €.
                 </p>
                 <button
                   onClick={resetOrder}
